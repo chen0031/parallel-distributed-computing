@@ -84,6 +84,52 @@ void CONV(
     }
   }
 
+
+  // **** LARGE PRIVATE COUT, SMALL PRIVATE WEIGHT, SMALL PRIVATE CIN *****
+  // float private_Cout[IMROW * IMROW];
+  // for (int h = 0; h < IMROW; h++) {
+  //   for (int w = 0; w < IMROW; w++) {
+  //     private_Cout[(h * IMROW) + w] = private_bias;
+  //   }
+  // }
+
+  // float private_weight[KERNEL * KERNEL];
+  // float private_Cin[INIMROW];
+  // for (int j = 0; j < NUM; j++) {
+
+  //   for (int h = 0; h < INIMROW; h++){
+  //     for (int w = 0; w < INIMROW; w++){
+  //       private_Cin[(h * INIMROW) + w] = Cin[(j * INIMROW * INIMROW) + (h * INIMROW) + w];
+  //     }
+  //   }
+
+
+  //   for (int p = 0; p < KERNEL; p++){
+  //     for (int q = 0; q < KERNEL; q++){
+  //       private_weight[(p * KERNEL) + q] = weight[(gid * NUM * KERNEL * KERNEL) + (j * KERNEL * KERNEL) + (p * KERNEL) + q];
+  //     }
+  //   }
+
+  //   for (int h = 0; h < IMROW; h++) {
+  //     for (int w = 0; w < IMROW; w++) {
+  //       for (int p = 0; p < KERNEL; p++) {
+  //         for (int q = 0; q < KERNEL; q++) {
+  //           private_Cout[(h * IMROW) + w] +=
+  //             (private_weight[(p * KERNEL) + q] *
+  //             private_Cin[((h + p) * INIMROW) + (w + q)]);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
+  // for (int h = 0; h < IMROW; h++) {
+  //   for (int w = 0; w < IMROW; w++) {
+  //     Cout[(gid * IMROW * IMROW) + (h * IMROW) + w] = private_Cout[(h * IMROW) + w];
+  //   }
+  // }
+
+
   //*** SMALL PRIVATE COUT, LARGE PRIVATE WEIGHT ***
   // float private_weight[NUM * KERNEL * KERNEL];
   // for (int j = 0; j < NUM; j++){
@@ -98,6 +144,7 @@ void CONV(
   // float private_Cout[IMROW];
   // for (int j = 0; j < NUM; j++) {
   //   for (int h = 0; h < IMROW; h++) {
+
   //     for (int w = 0; w < IMROW; w++){
   //       private_Cout[w] = private_bias;
   //     }
