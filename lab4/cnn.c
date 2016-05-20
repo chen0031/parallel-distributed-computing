@@ -217,24 +217,24 @@ int main()
     cl_kernel kernel;
     kernel = clCreateKernel(program, "CONV", &status);
     if (status < 0) printf("ERROR: clCreateKernel: %d\n", status);
-    else printf("Success clCreateKernel\n");
+    else printf("Success: clCreateKernel\n");
 
     // Associate the input and output buffers with the kernel 
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &bufCout);
     if (status < 0) printf("ERROR: clSetKernelArg (Cout): %d\n", status);
-    else printf("Success clSetKernelArg (Cout)\n");
+    else printf("Success: clSetKernelArg (Cout)\n");
 
     status = clSetKernelArg(kernel, 1, sizeof(cl_mem), &bufCin);
     if (status < 0) printf("ERROR: clSetKernelArg (Cin): %d\n", status);
-    else printf("Success clSetKernelArg (Cin)\n");
+    else printf("Success: clSetKernelArg (Cin)\n");
 
     status = clSetKernelArg(kernel, 2, sizeof(cl_mem), &bufWeight);
     if (status < 0) printf("ERROR: clSetKernelArg (weight): %d\n", status);
-    else printf("Success clSetKernelArg (weight)\n");
+    else printf("Success: clSetKernelArg (weight)\n");
 
     status = clSetKernelArg(kernel, 3, sizeof(cl_mem), &bufBias);
     if (status < 0) printf("ERROR: clSetKernelArg (bias): %d\n", status);
-    else printf("Success clSetKernelArg (bias)\n");
+    else printf("Success: clSetKernelArg (bias)\n");
 
     // size_t clocal_size = WORK_GROUP_SIZE * IMROW * IMROW * sizeof(float);
     // printf("Clocal size: %d\n",clocal_size);
@@ -274,25 +274,14 @@ int main()
 	clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(time_start), &time_start, NULL);
 	clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(time_end), &time_end, NULL);
 	total_time = time_end - time_start;
-	printf("clEnqueueNDRangeKernel = %0.3f (sec)\n", (total_time / 1000000000.0));
+	printf("TIME: %0.3f (sec)\n", (total_time / 1000000000.0));
 
 
     // 10) READ BUFFER
-    //Make sure all queued events are finished
-    clFinish(cmdQueue);
     // Read the device output buffer to the host output array
     clEnqueueReadBuffer(cmdQueue, bufCout, CL_TRUE, 0, cout_size, Cout, 0, NULL, &event);
     if (status < 0) printf("ERROR: clEnqueueReadBuffer (Cout): %d\n", status);
     else printf("Success: clEnqueueReadBuffer\n");
-    //Make sure kernel execution has finished
-    clWaitForEvents(1, &event);
-
-    //Read Profiling
-    clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(time_start), &time_start, NULL);
-    clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(time_end), &time_end, NULL);
-    total_time = time_end - time_start;
-    printf("clEnqueueReadBuffer = %0.3f (sec)\n", (total_time / 1000000000.0));
-
 
     // 11) VERIFY RESULT
     int error = Verify(Cout);
