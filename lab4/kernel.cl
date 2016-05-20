@@ -26,6 +26,22 @@ void CONV(
     }
   }
 
+  //BASIC ALGORITHM
+  // for (int j = 0; j < NUM; j++) {
+  //   for (int h = 0; h < IMROW; h++) {
+  //     for (int w = 0; w < IMROW; w++) {
+  //       for (int p = 0; p < KERNEL; p++) {
+  //         for (int q = 0; q < KERNEL; q++) {
+  //           private_Cout[(h * IMROW) + w] +=
+  //             (weight[(gid * NUM * KERNEL * KERNEL) + (j * KERNEL * KERNEL) + (p * KERNEL) + q] *
+  //             Cin[(j * INIMROW * INIMROW) + ((h + p) * INIMROW) + (w + q)]);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
+  //PRIVATE WEIGHT
   // float private_weight[NUM * KERNEL * KERNEL];
   // for (int j = 0; j < NUM; j++){
   //   for (int p = 0; p < KERNEL; p++){
@@ -36,6 +52,29 @@ void CONV(
   //   }
   // }
 
+  float private_weight[KERNEL * KERNEL];
+  for (int j = 0; j < NUM; j++) {
+    for (int p = 0; p < KERNEL; p++){
+      for (int q = 0; q < KERNEL; q++){
+        private_weight[(p * KERNEL) + q] = weight[(gid * NUM * KERNEL * KERNEL) + (j * KERNEL * KERNEL) + (p * KERNEL) + q];
+      }
+    }
+
+    for (int h = 0; h < IMROW; h++) {
+      for (int w = 0; w < IMROW; w++) {
+        for (int p = 0; p < KERNEL; p++) {
+          for (int q = 0; q < KERNEL; q++) {
+            private_Cout[(h * IMROW) + w] +=
+              (private_weight[(p * KERNEL) + q] *
+              Cin[(j * INIMROW * INIMROW) + ((h + p) * INIMROW) + (w + q)]);
+          }
+        }
+      }
+    }
+  }
+
+
+  // LOCAL WEIGHT
   // for (int j = 0; j < NUM; j++){
   //   for (int p = 0; p < KERNEL; p++){
   //     for (int q = 0; q < KERNEL; q++){
@@ -45,19 +84,7 @@ void CONV(
   //   }
   // }
 
-  for (int j = 0; j < NUM; j++) {
-    for (int h = 0; h < IMROW; h++) {
-      for (int w = 0; w < IMROW; w++) {
-        for (int p = 0; p < KERNEL; p++) {
-          for (int q = 0; q < KERNEL; q++) {
-            private_Cout[(h * IMROW) + w] +=
-              (weight[(gid * NUM * KERNEL * KERNEL) + (j * KERNEL * KERNEL) + (p * KERNEL) + q] *
-              Cin[(j * INIMROW * INIMROW) + ((h + p) * INIMROW) + (w + q)]);
-          }
-        }
-      }
-    }
-  }
+  
 
   for (int h = 0; h < IMROW; h++) {
     for (int w = 0; w < IMROW; w++) {
@@ -66,6 +93,7 @@ void CONV(
   }
 
 
+  // LOCAL COut
   // for (int h = 0; h < IMROW; h++) {
   //   for (int w = 0; w < IMROW; w++) {
   //     Clocal[(lid * IMROW * IMROW) + (h * IMROW) + w] = private_Cout[(h * IMROW) + w];
