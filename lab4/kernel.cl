@@ -13,6 +13,9 @@ void CONV(
   int gid = get_global_id(0);
   int g_size = get_global_size(0);
 
+  int lid = get_local_id(0);
+  int l_size = get_local_size(0);
+
   float private_bias = bias[gid];
 
 
@@ -22,6 +25,25 @@ void CONV(
       private_Cout[(h * IMROW) + w] = private_bias;
     }
   }
+
+  // float private_weight[NUM * KERNEL * KERNEL];
+  // for (int j = 0; j < NUM; j++){
+  //   for (int p = 0; p < KERNEL; p++){
+  //     for (int q = 0; q < KERNEL; q++){
+  //       private_weight[(j * KERNEL * KERNEL) + (p * KERNEL) + q] =
+  //         weight[(gid * NUM * KERNEL * KERNEL) + (j * KERNEL * KERNEL) + (p * KERNEL) + q];
+  //     }
+  //   }
+  // }
+
+  // for (int j = 0; j < NUM; j++){
+  //   for (int p = 0; p < KERNEL; p++){
+  //     for (int q = 0; q < KERNEL; q++){
+  //       weight_local[(lid * NUM * KERNEL * KERNEL) + (j * KERNEL * KERNEL) + (p * KERNEL) + q] =
+  //         weight[(gid * NUM * KERNEL * KERNEL) + (j * KERNEL * KERNEL) + (p * KERNEL) + q];
+  //     }
+  //   }
+  // }
 
   for (int j = 0; j < NUM; j++) {
     for (int h = 0; h < IMROW; h++) {
@@ -42,4 +64,23 @@ void CONV(
       Cout[(gid * IMROW * IMROW) + (h * IMROW) + w] = private_Cout[(h * IMROW) + w];
     }
   }
+
+
+  // for (int h = 0; h < IMROW; h++) {
+  //   for (int w = 0; w < IMROW; w++) {
+  //     Clocal[(lid * IMROW * IMROW) + (h * IMROW) + w] = private_Cout[(h * IMROW) + w];
+  //   }
+  // }
+  // barrier(CLK_LOCAL_MEM_FENCE);
+
+  // if (lid == 0){
+  //   for (int l = 0; l < l_size; l++){
+  //     for (int h = 0; h < IMROW; h++) {
+  //       for (int w = 0; w < IMROW; w++) {
+  //         Cout[((gid + l) * IMROW * IMROW) + (h * IMROW) + w] = Clocal[(l * IMROW * IMROW) + (h * IMROW) + w];
+  //       }
+  //     }
+  //   }
+  // }
+
 }

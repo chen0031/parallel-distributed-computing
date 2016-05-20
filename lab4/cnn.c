@@ -13,7 +13,12 @@
 #define MAX_WARPS_PER_SM 64
 #define THREADS_PER_WARP 32
 
-#define GLOBAL_WORK_ITEMS 32
+//32 threads per group --> 16 groups
+//16 threads per group --> 32 groups
+//8 threads per group --> 64 groups
+//4 threads per group --> 128 groups
+//2 threads per group --> 256 groups
+#define WORK_GROUP_SIZE 32
 
 
 // Sequential CNN implementation
@@ -43,10 +48,24 @@ void CONV(float Cout[NUM][IMROW][IMROW], float Cin[NUM][INIMROW][INIMROW],
 
 int main()
 {
-	static float Cout[NUM][IMROW][IMROW];
-	static float Cin[NUM][INIMROW][INIMROW];
-	static float weight[NUM][NUM][KERNEL][KERNEL];
-	static float bias[NUM];
+	static float Cout[NUM][IMROW][IMROW]; 
+    // 512 * 224 * 224 * 4 = 102760448 bytes = 102 MB
+    // Splitting up Cout locally to each work group
+    // 32 * 224 * 224 * 4 = 6422528 bytes = 6422 KB
+    // Splitting up Cout privately
+    // 1 * 224 * 224 * 4 = 200704 bytes = 200 kb
+	static float Cin[NUM][INIMROW][INIMROW]; 
+    // 512 * 226 * 226 * 4 = 104603648 bytes = 104 MB
+    // Splitting up Cin Privately
+    // 1 * 226 * 226 * 4 ~ 200 kb
+	static float weight[NUM][NUM][KERNEL][KERNEL]; 
+    // 512 * 512 * 3 * 3 * 4 = 9437184 bytes = 9437 KB = 9 MB
+    // Splitting weight up locally to each work group
+    // 32 * 512 * 3 * 3 * 4 = 589824 Bytes = 589 KB
+    // Splitting weight up privately
+    // 1 * 512 * 3 * 3 * 4 = 18432 bytes = 18.4 Kb
+	static float bias[NUM]; 
+    // 512 * 4 = 
 
 	LoadData(Cin, weight, bias);
 
@@ -217,11 +236,17 @@ int main()
     if (status < 0) printf("ERROR: clSetKernelArg (bias): %d\n", status);
     else printf("Success clSetKernelArg (bias)\n");
 
-    // size_t clocal_size = (N_THREADS / THREADS_PER_WARP) * IMROW * IMROW * sizeof(float);
+    // size_t clocal_size = WORK_GROUP_SIZE * IMROW * IMROW * sizeof(float);
+    // printf("Clocal size: %d\n",clocal_size);
     // status = clSetKernelArg(kernel, 4, clocal_size, NULL);
     // if (status < 0) printf("ERROR: clSetKernelArg (Clocal): %d\n", status);
     // else printf("Success clSetKernelArg (Clocal)\n");
 
+    // size_t weight_local_size = WORK_GROUP_SIZE * NUM * KERNEL * KERNEL * sizeof(float);
+    // printf("weight_local_size (kb): %f\n", (weight_local_size / 1000.0));
+    // status = clSetKernelArg(kernel, 4, weight_local_size, NULL);
+    // if (status < 0) printf("ERROR: clSetKernelArg (weight_local): %d\n", status);
+    // else printf("Success clSetKernelArg (weight_local)\n");
 
 
     // 9) EXECUTE KERNEL
@@ -232,7 +257,9 @@ int main()
     globalWorkSize[0] = N_THREADS;
 
     size_t localWorkSize[1];
-    localWorkSize[0] = THREADS_PER_WARP;
+    localWorkSize[0] = WORK_GROUP_SIZE;
+    int num_groups = N_THREADS / WORK_GROUP_SIZE;
+    printf("%d threads, %d threads per group, %d groups\n", globalWorkSize[0], localWorkSize[0], num_groups);
     //Make sure all queued events are finished
     clFinish(cmdQueue);
     
