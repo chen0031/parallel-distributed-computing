@@ -9,7 +9,6 @@ void CONV(
 	__global float * Cin,
 	__global float * weight,
 	__global float * bias,
-  __local float * Cout_loc,
   __local float * weight_loc,
   __local float * Cin_loc) {
 
@@ -23,7 +22,7 @@ void CONV(
 
   float private_bias = bias[group_id];
 
-  // **** LARGE PRIVATE COUT ****
+  // **** Lots local weight and Cin ****
   for (int h = 0; h < IMROW; h++) {
     for (int w = lid; w < IMROW; w += l_size){
       Cout[(group_id * IMROW * IMROW) + (h * IMROW) + w] = private_bias;
@@ -38,20 +37,8 @@ void CONV(
       }
     }
     barrier(CLK_LOCAL_MEM_FENCE);
-    
-    // int cout_row;
-    for (int h = 0; h < IMROW; h++) {
-      // cout_row = h - (h / 28);
-      // //Load local Cout
-      // if (cout_row == 0){
-      //   for (int c = 0; c < 28; c++){
-      //     for (int w = lid; w < IMROW; w += l_size){
-      //       Cout_loc[(c * IMROW) + w] = Cout[(group_id * IMROW * IMROW) + ((h + c) * IMROW) + w];
-      //     }
-      //   }
-      //   barrier(CLK_LOCAL_MEM_FENCE);
-      // }
 
+    for (int h = 0; h < IMROW; h++) {
       //Load local Cin
       for (int k = 0; k < KERNEL; k++){
         for (int w = lid; w < INIMROW; w += l_size){
@@ -65,22 +52,10 @@ void CONV(
         for (int p = 0; p < KERNEL; p++) {
           for (int q = 0; q < KERNEL; q++) {
             Cout[(group_id * IMROW * IMROW) + (h * IMROW) + w] +=
-            // Cout_loc[(cout_row * IMROW) + w] +=
               (weight_loc[(p * KERNEL) + q] * Cin_loc[(p * INIMROW) + (w + q)]);
           }
         }
       }
-      // barrier(CLK_LOCAL_MEM_FENCE);
-
-      //Copy back local Cout
-      // if (cout_row == 27){
-      //   for (int c = 0; c < 28; c ++){
-      //     for (int w = lid; w < IMROW; w += l_size){
-      //       Cout[(group_id * IMROW * IMROW) + ((h + c) * IMROW) + w] += Cout_loc[(c * IMROW) + w];
-      //     }
-      //   }
-      //   barrier(CLK_LOCAL_MEM_FENCE);
-      // }
     }
   }
 

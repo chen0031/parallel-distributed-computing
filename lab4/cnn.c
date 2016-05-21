@@ -237,23 +237,23 @@ int main()
     if (status < 0) printf("ERROR: clSetKernelArg (bias): %d\n", status);
     else printf("Success: clSetKernelArg (bias)\n");
 
-    size_t Cout_loc_size = IMROW * sizeof(float);
-    printf("Cout_loc size (kb): %f\n", (Cout_loc_size / 1000.0));
-    status = clSetKernelArg(kernel, 4, Cout_loc_size, NULL);
-    if (status < 0) printf("ERROR: clSetKernelArg (Cout_loc): %d\n", status);
-    else printf("Success clSetKernelArg (Cout_loc)\n");
-
     size_t weight_loc_size = KERNEL * KERNEL * sizeof(float);
     printf("weight_loc size (kb): %f\n", (weight_loc_size / 1000.0));
-    status = clSetKernelArg(kernel, 5, weight_loc_size, NULL);
+    status = clSetKernelArg(kernel, 4, weight_loc_size, NULL);
     if (status < 0) printf("ERROR: clSetKernelArg (weight_loc): %d\n", status);
     else printf("Success clSetKernelArg (weight_loc)\n");
 
     size_t Cin_loc_size = KERNEL * INIMROW * sizeof(float);
     printf("Cin_loc size (kb): %f\n", (Cin_loc_size / 1000.0));
-    status = clSetKernelArg(kernel, 6, Cin_loc_size, NULL);
+    status = clSetKernelArg(kernel, 5, Cin_loc_size, NULL);
     if (status < 0) printf("ERROR: clSetKernelArg (Cin_loc: %d\n", status);
     else printf("Success clSetKernelArg (Cin_loc)\n");
+
+    // size_t Cout_loc_size = IMROW * sizeof(float);
+    // printf("Cout_loc size (kb): %f\n", (Cout_loc_size / 1000.0));
+    // status = clSetKernelArg(kernel, 6, Cout_loc_size, NULL);
+    // if (status < 0) printf("ERROR: clSetKernelArg (Cout_loc): %d\n", status);
+    // else printf("Success clSetKernelArg (Cout_loc)\n");
 
 
     // 9) EXECUTE KERNEL
