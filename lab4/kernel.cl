@@ -49,12 +49,13 @@ void CONV(
 
       //Computation
       for (int w = lid; w < IMROW; w += l_size) {
+        float comp = 0.0;
         for (int p = 0; p < KERNEL; p++) {
           for (int q = 0; q < KERNEL; q++) {
-            Cout[(group_id * IMROW * IMROW) + (h * IMROW) + w] +=
-              (weight_loc[(p * KERNEL) + q] * Cin_loc[(p * INIMROW) + (w + q)]);
+            comp += (weight_loc[(p * KERNEL) + q] * Cin_loc[(p * INIMROW) + (w + q)]);
           }
         }
+        Cout[(group_id * IMROW * IMROW) + (h * IMROW) + w] += comp;
       }
       barrier(CLK_LOCAL_MEM_FENCE);
     }
