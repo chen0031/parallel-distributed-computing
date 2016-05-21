@@ -19,7 +19,7 @@
 //4 threads per group --> 128 groups
 //2 threads per group --> 256 groups
 #define N_WORK_GROUPS 512
-#define WORK_GROUP_SIZE 32
+#define WORK_GROUP_SIZE 128
 
 
 // Sequential CNN implementation

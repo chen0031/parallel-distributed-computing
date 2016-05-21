@@ -27,6 +27,7 @@ void CONV(
       Cout[(group_id * IMROW * IMROW) + (h * IMROW) + w] = private_bias;
     }
   }
+  barrier(CLK_LOCAL_MEM_FENCE);
   
   for (int j = 0; j < NUM; j++) {
     //Load local weight
@@ -55,6 +56,7 @@ void CONV(
           }
         }
       }
+      barrier(CLK_LOCAL_MEM_FENCE);
     }
   }
 }
