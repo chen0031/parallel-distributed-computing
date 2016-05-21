@@ -12,17 +12,16 @@ void CONV(
   __local float * weight_loc,
   __local float * Cin_loc) {
 
-  int gid = get_global_id(0);
-  int g_size = get_global_size(0);
+  // int gid = get_global_id(0);
+  // int g_size = get_global_size(0);
+
+  int group_id = get_group_id(0); //i
 
   int lid = get_local_id(0);
   int l_size = get_local_size(0);
 
-  int group_id = get_group_id(0); //i
-
   float private_bias = bias[group_id];
 
-  // **** Lots local weight and Cin ****
   for (int h = 0; h < IMROW; h++) {
     for (int w = lid; w < IMROW; w += l_size){
       Cout[(group_id * IMROW * IMROW) + (h * IMROW) + w] = private_bias;
