@@ -226,6 +226,7 @@ int main()
     if (status < 0) printf("ERROR: clSetKernelArg (bias): %d\n", status);
     else printf("Success: clSetKernelArg (bias)\n");
 
+    //NOW ALLOCATED IN THE KERNEL ITSELF
     size_t weight_loc_size = KERNEL * KERNEL * sizeof(float);
     printf("weight_loc size (kb): %f\n", (weight_loc_size / 1000.0));
     // status = clSetKernelArg(kernel, 4, weight_loc_size, NULL);

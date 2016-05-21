@@ -11,7 +11,6 @@ void CONV(
 	__global float * bias){
   // __local float * weight_loc,
   // __local float * Cin_loc) {
-
   __local float weight_loc[KERNEL * KERNEL];
   __local float Cin_loc[KERNEL * INIMROW];
 
