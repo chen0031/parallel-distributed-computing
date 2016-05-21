@@ -7,17 +7,6 @@
 #include <CL/cl.h>
 #include "kernel_cl.h"
 
-#define N_THREADS 512
-#define MAX_THREADS_PER_BLOCK 1024
-#define MAX_BLOCKS_PER_SM 16
-#define MAX_WARPS_PER_SM 64
-#define THREADS_PER_WARP 32
-
-//32 threads per group --> 16 groups
-//16 threads per group --> 32 groups
-//8 threads per group --> 64 groups
-//4 threads per group --> 128 groups
-//2 threads per group --> 256 groups
 #define N_WORK_GROUPS 512
 #define WORK_GROUP_SIZE 128
 
@@ -266,7 +255,7 @@ int main()
     size_t localWorkSize[1];
     localWorkSize[0] = WORK_GROUP_SIZE;
     int num_groups = N_WORK_GROUPS;
-    printf("%d threads, %d threads per group, %d groups\n", globalWorkSize[0], localWorkSize[0], num_groups);
+    printf("%d groups, %d threads per group, %d threads\n", num_groups, localWorkSize[0], globalWorkSize[0]);
     //Make sure all queued events are finished
     clFinish(cmdQueue);
     
