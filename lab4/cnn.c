@@ -18,6 +18,7 @@
 //8 threads per group --> 64 groups
 //4 threads per group --> 128 groups
 //2 threads per group --> 256 groups
+#define N_WORK_GROUPS 512
 #define WORK_GROUP_SIZE 32
 
 
@@ -236,17 +237,23 @@ int main()
     if (status < 0) printf("ERROR: clSetKernelArg (bias): %d\n", status);
     else printf("Success: clSetKernelArg (bias)\n");
 
-    // size_t clocal_size = WORK_GROUP_SIZE * IMROW * IMROW * sizeof(float);
-    // printf("Clocal size: %d\n",clocal_size);
-    // status = clSetKernelArg(kernel, 4, clocal_size, NULL);
-    // if (status < 0) printf("ERROR: clSetKernelArg (Clocal): %d\n", status);
-    // else printf("Success clSetKernelArg (Clocal)\n");
+    size_t Cout_loc_size = IMROW * sizeof(float);
+    printf("Cout_loc size (kb): %f\n", (Cout_loc_size / 1000.0));
+    status = clSetKernelArg(kernel, 4, Cout_loc_size, NULL);
+    if (status < 0) printf("ERROR: clSetKernelArg (Cout_loc): %d\n", status);
+    else printf("Success clSetKernelArg (Cout_loc)\n");
 
-    // size_t weight_local_size = WORK_GROUP_SIZE * NUM * KERNEL * KERNEL * sizeof(float);
-    // printf("weight_local_size (kb): %f\n", (weight_local_size / 1000.0));
-    // status = clSetKernelArg(kernel, 4, weight_local_size, NULL);
-    // if (status < 0) printf("ERROR: clSetKernelArg (weight_local): %d\n", status);
-    // else printf("Success clSetKernelArg (weight_local)\n");
+    size_t weight_loc_size = KERNEL * KERNEL * sizeof(float);
+    printf("weight_loc size (kb): %f\n", (weight_loc_size / 1000.0));
+    status = clSetKernelArg(kernel, 5, weight_loc_size, NULL);
+    if (status < 0) printf("ERROR: clSetKernelArg (weight_loc): %d\n", status);
+    else printf("Success clSetKernelArg (weight_loc)\n");
+
+    size_t Cin_loc_size = KERNEL * INIMROW * sizeof(float);
+    printf("Cin_loc size (kb): %f\n", (Cin_loc_size / 1000.0));
+    status = clSetKernelArg(kernel, 6, Cin_loc_size, NULL);
+    if (status < 0) printf("ERROR: clSetKernelArg (Cin_loc: %d\n", status);
+    else printf("Success clSetKernelArg (Cin_loc)\n");
 
 
     // 9) EXECUTE KERNEL
@@ -254,11 +261,11 @@ int main()
     // Define an index space (global work size) of work items for execution. 
     size_t globalWorkSize[1];   
     // total number of work items
-    globalWorkSize[0] = N_THREADS;
+    globalWorkSize[0] = N_WORK_GROUPS * WORK_GROUP_SIZE;
 
     size_t localWorkSize[1];
     localWorkSize[0] = WORK_GROUP_SIZE;
-    int num_groups = N_THREADS / WORK_GROUP_SIZE;
+    int num_groups = N_WORK_GROUPS;
     printf("%d threads, %d threads per group, %d groups\n", globalWorkSize[0], localWorkSize[0], num_groups);
     //Make sure all queued events are finished
     clFinish(cmdQueue);
