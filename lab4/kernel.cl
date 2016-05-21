@@ -8,12 +8,12 @@ void CONV(
   __global float * Cout,
 	__global float * Cin,
 	__global float * weight,
-	__global float * bias,
-  __local float * weight_loc,
-  __local float * Cin_loc) {
+	__global float * bias){
+  // __local float * weight_loc,
+  // __local float * Cin_loc) {
 
-  // int gid = get_global_id(0);
-  // int g_size = get_global_size(0);
+  __local float weight_loc[KERNEL * KERNEL];
+  __local float Cin_loc[KERNEL * INIMROW];
 
   int group_id = get_group_id(0); //i
 
@@ -21,14 +21,14 @@ void CONV(
   int l_size = get_local_size(0);
 
   float private_bias = bias[group_id];
-
+  
   for (int h = 0; h < IMROW; h++) {
     for (int w = lid; w < IMROW; w += l_size){
       Cout[(group_id * IMROW * IMROW) + (h * IMROW) + w] = private_bias;
     }
   }
   barrier(CLK_LOCAL_MEM_FENCE);
-  
+   
   for (int j = 0; j < NUM; j++) {
     //Load local weight
     for (int p = 0; p < KERNEL; p++){
