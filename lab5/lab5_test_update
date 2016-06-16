@@ -1,0 +1,127 @@
+#!/bin/bash
+REQUIRED_FILES="lab5.pdf"
+REQUIRED_OPENCL="cnn.c kernel.cl lab5.tcl system_estimate.xtxt sdaccel.log"
+REQUIRED_MERLIN="cnn.c* cnn_kernel.c* mars_summary.rpt merlin_sim.log cnn_kernel_csynth.rpt"
+REQUIRED_DESIGN="cs133_lab5.exe *.xclbin"
+
+# usage
+if [ $# -lt 2 ]
+then
+	echo "Usage: $0 Your_UID <mode:opencl|merlin|both> [nodesign]" 1>&2
+	exit
+fi
+ORI_DIR=`pwd`
+TMP_DIR=/tmp/${1}_tmp
+FOLDER_NAME=$1
+MODE=$2
+HASDESIGN=1
+
+echo "Checking under $MODE mode"
+
+if [ $# -eq 3 ]; then
+	if [ $3 == "nodesign" ]; then
+		echo "No design (bit-stream) will be checked"
+		HASDESIGN=0
+	fi
+fi
+
+ZIP_FILE="lab5-${1}.tar.gz"
+
+# clean any existing files
+rm -rf ${TMP_DIR}
+mkdir ${TMP_DIR}
+
+if [ ! -f ${ZIP_FILE} ]; then
+    echo "ERROR: Cannot find ${ZIP_FILE}, ensure this script is put in the same directory of your ${ZIP_FILE} file. Otherwise check the tar file name" 1>&2
+    rm -rf ${TMP_DIR}
+    echo "rmd"
+    exit 1
+fi
+
+# change directory to the grading folder
+cp ${ZIP_FILE} ${TMP_DIR}
+cd ${TMP_DIR}
+
+# unzip the submission zip file 
+tar -xzf ${ZIP_FILE}
+if [ "$?" -ne "0" ]; then 
+    echo "ERROR: Cannot unzip ${ZIP_FILE} to ${TMP_DIR}"
+    rm -rf ${TMP_DIR}
+    exit 1
+fi
+
+if [ ! -d ${FOLDER_NAME} ];
+then
+	echo "Check your folder name is EXACTLY the same as UID you typed"
+	rm -rf ${TMP_DIR}
+	exit 1
+fi
+
+cd ${FOLDER_NAME}
+
+# check the existence of the required files
+echo "Checking report..."
+for FILE in ${REQUIRED_FILES}
+do
+    if [ ! -f ${FILE} ]; then
+		echo "ERROR: Cannot find ${FILE} in the root folder of your tar file" 1>&2
+		rm -rf ${TMP_DIR}
+		exit 1
+    fi
+done
+
+if [ $HASDESIGN -eq 1 ]; then
+	echo "Checking design..."
+	for FILE in ${REQUIRED_DESIGN}
+	do
+    if [ ! -f ${FILE} ]; then
+		echo "ERROR: Cannot find ${FILE} in the root folder of your tar file" 1>&2
+		rm -rf ${TMP_DIR}
+		exit 1
+    fi
+done
+fi
+
+if [ $MODE == "opencl" ] || [ $MODE == "both" ]; then
+	echo "Checking OpenCL files..."
+	if [ ! -d opencl ]; then
+		echo "ERROR: Cannot find \"opencl\" in the root folder of your tar file" 1>&2
+		rm -rf ${TMP_DIR}
+		exit 1
+	fi
+	cd opencl
+
+	for FILE in ${REQUIRED_OPENCL}
+	do
+    if [ ! -f ${FILE} ]; then
+		echo "ERROR: Cannot find ${FILE} in the opencl folder of your tar file" 1>&2
+		rm -rf ${TMP_DIR}
+		exit 1
+    fi
+	done
+	cd ..
+fi
+
+if [ $MODE == "merlin" ] || [ $MODE == "both" ]; then
+	echo "Checking Merlin files..."
+	if [ ! -d merlin ]; then
+		echo "ERROR: Cannot find \"merlin\" in the root folder of your tar file" 1>&2
+		rm -rf ${TMP_DIR}
+		exit 1
+	fi
+	cd merlin
+
+	for FILE in ${REQUIRED_MERLIN}
+	do
+    if [ ! -f ${FILE} ]; then
+		echo "ERROR: Cannot find ${FILE} in the merlin folder of your tar file" 1>&2
+		rm -rf ${TMP_DIR}
+		exit 1
+    fi
+	done
+	cd ..
+fi
+
+echo "Check File Successfully. Please upload your ${ZIP_FILE} file to CCLE."
+rm -rf ${TMP_DIR}
+exit 0
